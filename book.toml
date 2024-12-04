@@ -1,0 +1,34 @@
+[book]
+authors = ["kuizhiqing"]
+language = "en"
+multilingual = true
+src = "blog"
+title = "carpe diem"
+description = ""
+
+[preprocessor.katex]
+[preprocessor.index]
+
+[output.html]
+no-section-label = false
+git-repository-url = "https://github.com/kuizhiqing/blog"
+site-url = "/"
+additional-css = ["./theme/catppuccin.css"]
+default-theme = "latte"
+preferred-dark-theme = "mocha"
+
+[output.html.playground]
+editable = false
+copy-js = true
+line-numbers = false
+
+[output.html.search]
+enable = false
+
+[output.html.fold]
+enable = true
+level = 0
+
+[output.html.redirect]
+
+[preprocessor.theme]
