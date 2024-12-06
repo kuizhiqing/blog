@@ -3,8 +3,8 @@ authors = ["kuizhiqing"]
 language = "en"
 multilingual = true
 src = "blog"
-title = "carpe diem"
-description = ""
+title = "Artway"
+description = "carpe diem"
 
 [preprocessor.katex]
 [preprocessor.index]
@@ -13,6 +13,7 @@ description = ""
 no-section-label = false
 git-repository-url = "https://github.com/kuizhiqing/blog"
 site-url = "/"
+cname = "blog.kuizhiqing.cn"
 additional-css = ["./theme/catppuccin.css"]
 default-theme = "latte"
 preferred-dark-theme = "mocha"
