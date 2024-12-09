@@ -10,6 +10,9 @@
     --sidebar-width: 0px !important;
     --sidebar-width-wide: 0px !important;
 }
+a, a:visited, a:hover, a:active {
+  color: inherit;
+}
 .latte.hljs {
   color: #4c4f69;
   background: #eff1f5;
