@@ -10,6 +10,10 @@
     --sidebar-width: 0px !important;
     --sidebar-width-wide: 0px !important;
 }
+.content a:link {
+  color: inherit;
+  text-decoration: auto;
+}
 a, a:visited, a:hover, a:active {
   color: inherit;
 }
