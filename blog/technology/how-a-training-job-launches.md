@@ -6,7 +6,7 @@
 
 问题的起点，我们有多台能够互联互通的机器需要能够共同计算一个任务，这些机器上当前主流机型配备了 8 个 GPU 卡（图示以 4 卡为例）。
 
-![image]()
+![image](/assets/gpu-nodes.svg)
 
 首先，机器会通过如 kubernetes 等方式组成集群，机器的设备包括 CPU、内存、GPU 和网络等都会被抽象成资源进行管理，集群管理的资源可以统一进行分配和使用。补充一点，这里的资源不仅包括物理资源，例如端口号甚至自定义的概念也是可以被当作资源的。
 
@@ -22,7 +22,7 @@ Kubernetes 中资源分配和使用的单元叫做 Pod, 一个 Pod 可以包含�
 
 然而，今天讨论的 GPU 训练场景，参与训练的最小单位并不是机器，而是 GPU，当前主流的框架包括 PyTorch、Tensorflow、PaddlePaddle 在启动分布式任务的时候都会启动和 GPU 相同数量的进程与 GPU 设备一对一绑定，后文把这个进程称为 GPU 进程。
 
-![image]()
+![image](/assets/gpu-process.svg)
 
 处在不同网络拓扑节点的两个 GPU 之间进行数据交换的效率是不一样的，最简略的例子比如机内 GPU 的通信效率会比机间高很多，所以在设计并行策略的时候会使用机内 GPU 组成模型并行而机间 GPU 组成数据并行。实现这些策略所依赖的是 GPU 也即对应的进程被分配序号 rank，包括总体的序号 global rank 和机内序号 local rank. 基于 rank，GPU 会被分成不同的分组 group 以进行不同阶段的数据交换。不同的 group 会建立不同的通信域，同一个 GPU 会被分进多个不同的 group，所以一个 GPU 进程会持有多个通信域。
 
@@ -36,7 +36,7 @@ Kubernetes 中资源分配和使用的单元叫做 Pod, 一个 Pod 可以包含�
 
 远程命令分发模式是前容器时代的产物，理论上不需要将机器组成 Kubernetes 集群运行。它依赖节点上都启动 sshd 服务，且已通过 ssh 免密互联互通，主节点按照节点信息配置（比如 mpi 的hostfile）通过 ssh 远程启动进程的方式启动 GPU 进程。主节点的在远程启动进程的时候将所有进程的信息包括 rank 信息通过环境变量传递给了 GPU 进程。
 
-![image]()
+![image](/assets/mpirun.svg)
 
 以 GPU 节点的视角，主进程是 sshd 服务进程，GPU 进程是它的子进程。
 
@@ -48,7 +48,7 @@ Kubernetes 中资源分配和使用的单元叫做 Pod, 一个 Pod 可以包含�
 
 在 Kubernetes 集群中启动分布式任务，分配资源然后在多个节点上启动容器时可以配置具体的启动命令，所以以 PyTorch 原生 [torchrun](https://pytorch.org/docs/stable/elastic/run.html) 为代表的主节点汇合模式是更加云原生的方式。这种方式在启动时，每个节点的启动进程叫做 agent，主节点的 agent 启动额外服务（如 TCPStore）供所有节点汇聚信息，所有节点的 agent 启动后通过和主节点建立连接上报自己的信息并获取所有节点信息，然后根据当前节点的相对位置和 GPU 数量启动对应的 GPU 进程并配置不同的环境变量。从而每个 GPU 进程可以获取到所有 GPU 进程的信息和自己的 rank 的信息。
 
-![image]()
+![image](/assets/master-gather.svg)
 
 以 GPU 节点的视角，主进程是 agent 服务进程，GPU 进程是它的子进程。
 
@@ -58,9 +58,9 @@ Kubernetes 中资源分配和使用的单元叫做 Pod, 一个 Pod 可以包含�
 
  从抽象意义上说，命令分模式是信息的 [broadcast](https://mpitutorial.com/tutorials/mpi-scatter-gather-and-allgather/)，而主节点汇合模式是信息的 [gather](https://mpitutorial.com/tutorials/mpi-scatter-gather-and-allgather/)。在分布式场景下这两种模式可以说无处不在。
 
-![image]()
+![image](/assets/broadcast-process.svg)
 
-![image]()
+![image](/assets/gather-process.svg)
 
  > 不同于 scatter，这里 broadcast 的信息一般是“全局”信息；信息聚合的阶段算 gather，加上后面完整的信息同步流程可以看作是 allgather 的过程。
 
